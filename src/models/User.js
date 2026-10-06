@@ -41,6 +41,40 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    hasCompletedOnboarding: {
+      type: Boolean,
+      default: false,
+    },
+    preferences: {
+      likes: {
+        type: [String],
+        default: ['movies', 'travel', 'cafes', 'transit', 'heritage', 'events', 'sunsets'],
+      },
+      dislikes: {
+        type: [String],
+        default: [],
+      },
+      selectedCity: {
+        type: String,
+        default: 'Kochi',
+      },
+      currency: {
+        type: String,
+        default: 'INR',
+      },
+    },
+    favorites: [
+      {
+        id: { type: String, required: true },
+        itemType: { type: String, default: 'place' }, // 'place' | 'trip' | 'movie' | 'trail'
+        title: { type: String, required: true },
+        subtitle: { type: String, default: '' },
+        image: { type: String, default: '' },
+        rating: { type: Number, default: 5 },
+        city: { type: String, default: 'Kochi' },
+        addedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   {
     timestamps: true,

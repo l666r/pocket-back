@@ -134,6 +134,14 @@ exports.verifyOtp = async (req, res) => {
         email: user.email,
         mobile: user.mobile,
         isVerified: user.isVerified,
+        hasCompletedOnboarding: user.hasCompletedOnboarding || false,
+        preferences: user.preferences || {
+          likes: ['movies', 'travel', 'cafes', 'transit', 'heritage', 'events', 'sunsets'],
+          dislikes: [],
+          selectedCity: 'Kochi',
+          currency: 'INR',
+        },
+        favorites: user.favorites || [],
       },
     });
   } catch (error) {
@@ -193,6 +201,14 @@ exports.login = async (req, res) => {
         email: user.email,
         mobile: user.mobile,
         isVerified: user.isVerified,
+        hasCompletedOnboarding: user.hasCompletedOnboarding || false,
+        preferences: user.preferences || {
+          likes: ['movies', 'travel', 'cafes', 'transit', 'heritage', 'events', 'sunsets'],
+          dislikes: [],
+          selectedCity: 'Kochi',
+          currency: 'INR',
+        },
+        favorites: user.favorites || [],
       },
     });
   } catch (error) {
@@ -244,5 +260,110 @@ exports.getMe = async (req, res) => {
     res.status(200).json({ success: true, user });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching profile' });
+  }
+};
+
+// @desc    Update Onboarding Likes, Dislikes & Selected City
+// @route   PUT /api/auth/preferences
+exports.updatePreferences = async (req, res) => {
+  try {
+    const { userId, likes, dislikes, selectedCity, currency } = req.body;
+    const uid = req.user ? req.user.id : userId;
+
+    if (!uid || uid === 'guest') {
+      return res.status(200).json({
+        success: true,
+        message: 'Guest preferences updated in session',
+        preferences: {
+          likes: likes || [],
+          dislikes: dislikes || [],
+          selectedCity: selectedCity || 'Kochi',
+          currency: currency || 'INR',
+        },
+      });
+    }
+
+    const user = await User.findById(uid);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (!user.preferences) user.preferences = {};
+    if (likes) user.preferences.likes = likes;
+    if (dislikes) user.preferences.dislikes = dislikes;
+    if (selectedCity) user.preferences.selectedCity = selectedCity;
+    if (currency) user.preferences.currency = currency;
+    user.hasCompletedOnboarding = true;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Preferences saved successfully',
+      preferences: user.preferences,
+      hasCompletedOnboarding: user.hasCompletedOnboarding,
+    });
+  } catch (error) {
+    console.error('updatePreferences error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Toggle Favorite Item (Place, Trip, Movie, Trail)
+// @route   POST /api/auth/favorites
+exports.toggleFavorite = async (req, res) => {
+  try {
+    const { userId, item } = req.body;
+    const uid = req.user ? req.user.id : userId;
+
+    if (!item || !item.id) {
+      return res.status(400).json({ success: false, message: 'Item details are required' });
+    }
+
+    if (!uid || uid === 'guest') {
+      return res.status(200).json({
+        success: true,
+        message: 'Guest favorite toggled',
+        item,
+      });
+    }
+
+    const user = await User.findById(uid);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (!user.favorites) user.favorites = [];
+
+    const existingIndex = user.favorites.findIndex((f) => f.id === item.id);
+    let isFavorited = false;
+
+    if (existingIndex > -1) {
+      user.favorites.splice(existingIndex, 1);
+      isFavorited = false;
+    } else {
+      user.favorites.push({
+        id: item.id,
+        itemType: item.itemType || 'place',
+        title: item.title || item.name,
+        subtitle: item.subtitle || item.area || '',
+        image: item.image || item.imageUrl || '',
+        rating: item.rating || 5,
+        city: item.city || 'Global',
+        addedAt: new Date(),
+      });
+      isFavorited = true;
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      isFavorited,
+      favorites: user.favorites,
+    });
+  } catch (error) {
+    console.error('toggleFavorite error:', error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };

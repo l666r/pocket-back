@@ -17,6 +17,31 @@ const contributedPlaceSchema = new mongoose.Schema(
       required: [true, 'Area/City is required (e.g. Fort Kochi)'],
       trim: true,
     },
+    city: {
+      type: String,
+      default: 'Kochi',
+      index: true,
+    },
+    imageUrl: {
+      type: String,
+      default: '',
+    },
+    rating: {
+      type: Number,
+      default: 4.8,
+    },
+    ratingCount: {
+      type: Number,
+      default: 1,
+    },
+    comments: [
+      {
+        user: { type: String, default: 'Explorer' },
+        text: { type: String, required: true },
+        rating: { type: Number, default: 5 },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
     address: {
       type: String,
       default: '',

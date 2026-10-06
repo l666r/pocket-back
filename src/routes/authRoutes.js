@@ -6,6 +6,8 @@ const {
   login,
   resendOtp,
   getMe,
+  updatePreferences,
+  toggleFavorite,
 } = require('../controllers/authController');
 
 // JWT Protection Middleware
@@ -35,5 +37,7 @@ router.post('/verify-otp', verifyOtp);
 router.post('/login', login);
 router.post('/resend-otp', resendOtp);
 router.get('/me', protect, getMe);
+router.put('/preferences', updatePreferences);
+router.post('/favorites', toggleFavorite);
 
 module.exports = router;

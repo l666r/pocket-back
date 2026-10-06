@@ -29,6 +29,15 @@ const tripSchema = new mongoose.Schema(
       required: [true, 'Destination is required'],
       trim: true,
     },
+    city: {
+      type: String,
+      default: 'Kochi',
+      index: true,
+    },
+    currency: {
+      type: String,
+      default: 'INR',
+    },
     days: {
       type: Number,
       default: 2,

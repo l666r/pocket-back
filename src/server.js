@@ -2,8 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const path = require('path');
 
-// Load environment variables
+// Load environment variables reliably from backend/.env
+dotenv.config({ path: path.join(__dirname, '../.env') });
 dotenv.config();
 
 const connectDB = require('./config/db');
@@ -12,6 +14,7 @@ const tripRoutes = require('./routes/tripRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const placeRoutes = require('./routes/placeRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
+const intelligenceRoutes = require('./routes/intelligenceRoutes');
 
 const app = express();
 
@@ -41,6 +44,7 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/places', placeRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/intelligence', intelligenceRoutes);
 
 // 404 Handler
 app.use((req, res) => {
